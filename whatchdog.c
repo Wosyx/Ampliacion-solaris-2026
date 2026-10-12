@@ -1,0 +1,1 @@
+#define WATCHDOG_BASE 0x400d8000
