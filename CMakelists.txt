@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 4.0)
+
+include(pico_sdk_import.cmake)
+
+project(Watchdog)
+
+pico_sdk_init()
+
+add_executable(main)
+
+target_sources(main 
+    PRIVATE
+    main.c
+)
+
+add_library(header)
+
+target_sources(header
+    PRIVATE
+    watchdog.c 
+
+    PUBLIC
+    FILE_SET HEADERS
+    FILES
+    watchdog.h
+)
+
+target_link_libraries(main
+    PRIVATE
+    header
+)

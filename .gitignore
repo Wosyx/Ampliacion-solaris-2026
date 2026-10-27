@@ -1,3 +1,9 @@
+AmpliacionSW2627
+.pdf
+pico-sdk/
+pico_sdk_import.cmake
+.vscode/
+build/
 # Prerequisites
 *.d
 
