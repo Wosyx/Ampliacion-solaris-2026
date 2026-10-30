@@ -24,6 +24,11 @@ target_sources(header
     FILES
     watchdog.h
 )
+target_link_libraries(header
+    PUBLIC
+        pico_stdlib
+        hardware_watchdog
+)
 
 target_link_libraries(main
     PRIVATE
