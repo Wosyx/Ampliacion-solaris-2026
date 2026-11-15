@@ -16,11 +16,14 @@ int main() {
     printf("Activamos watchdog\n");
     SPP_watchdog_enable(2000, 1);
 
-      for (int i=0;i<10;i++){
-        printf("Quedan: %d ms\n",SPP_watchdog_get_time_remaining_ms());
-        printf("Quedan: %d us\n", SPP_watchdog_get_time_remaining_us());
+    for (int i=0; i<30;i++){
+      for (int k=0;k<10;k++){
+        printf("Quedan: %u ms\n",(unsigned)SPP_watchdog_get_time_remaining_ms());
+        printf("Quedan: %u us\n", (unsigned)SPP_watchdog_get_time_remaining_us());
     }
-
+    printf("Recargamos el watchdog\n");
+    SPP_watchdog_update();
+    }
 
     printf("Desactivamos watchdog\n");
 
@@ -29,8 +32,7 @@ int main() {
 
     SPP_watchdog_enable(2000, 1);
   
-    printf("Recargamos el watchdog\n");
-    SPP_watchdog_update();
+    
 
     while(1);
     
