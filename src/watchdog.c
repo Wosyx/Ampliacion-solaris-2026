@@ -1,22 +1,45 @@
-#include <stdio.h>
-#include <stdint.h>
-#include "pico/stdlib.h"
-#include "hardware/watchdog.h"
+#include "include/types.h"
+
 
 bool SPP_watchdog_caused_reboot(void){
-    return watchdog_caused_reboot();
+    volatile uint32_t *watchdog_reboot=(volatile uint32_t *)(WATCHDOG_BASE+WATCHDOG_REASON_REGISTER_OFFSET);
+    if ((*watchdog_reboot & 1u) | (*watchdog_reboot & 1u<<1)){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 void SPP_watchdog_disable(void){
-    watchdog_disable();
+    volatile uint32_t *watchdog_crtl=(volatile uint32_t *)(WATCHDOG_BASE+WATCHDOG_CTRL_REGISTER_OFFSET+ATOMIC_CLEARON_WRITE);
+    *watchdog_crtl=1u<<30;
 }
 
 void SPP_watchdog_enable(uint32_t delay_ms, bool paused_on_debug){
-    watchdog_enable(delay_ms, paused_on_debug);
+    volatile uint32_t *watchdog_crtl_seton=(volatile uint32_t *)(WATCHDOG_BASE+WATCHDOG_CTRL_REGISTER_OFFSET+ATOMIC_SETON_WRITE);
+    volatile uint32_t *watchdog_crtl_clearon=(volatile uint32_t *)(WATCHDOG_BASE+WATCHDOG_CTRL_REGISTER_OFFSET+ATOMIC_CLEARON_WRITE);
+    volatile uint32_t *watchdog_load=(volatile uint32_t *)(WATCHDOG_BASE+WATCHDOG_LOAD_REGISTER_OFFSET);
+    if (delay_ms<=WATCHDOG_MAXIMUM_TIMER/1000){
+        uint32_t delay_us=delay_ms*1000;
+        *watchdog_load=delay_us;
+    }
+    else{
+        printf("Error argumento invalido");
+    }
+    if (paused_on_debug==true){
+        *watchdog_crtl_seton=(1u<<26) | (1u<<25); // | (1u<<24) no sei se se deberia parar o o jtag bus tamen pero en principio penso que non 
+    }
+    else{
+        *watchdog_crtl_clearon=(1u<<26) | (1u<<25);
+    }
+    *watchdog_crtl_seton=1u<<30;
 }
 
 uint32_t SPP_watchdog_get_time_remaining_ms(void){
-    watchdog_get_time_remaining_ms();
+    volatile uint32_t *watchdog_crtl=(volatile uint32_t *)(WATCHDOG_BASE+WATCHDOG_CTRL_REGISTER_OFFSET);
+    uint32_t time_remaning_ms=(*watchdog_crtl & ((1u<<24)-1))/1000;
+    return time_remaning_ms;
 }  
 
 bool SPP_watchdog_enable_caused_reboot (void){
@@ -24,8 +47,11 @@ bool SPP_watchdog_enable_caused_reboot (void){
 }
 
 uint32_t SPP_watchdog_get_time_remaining_us (void){
-    watchdog_get_time_remaining_us();
-}
+    volatile uint32_t *watchdog_crtl=(volatile uint32_t *)(WATCHDOG_BASE+WATCHDOG_CTRL_REGISTER_OFFSET);
+    uint32_t time_remaning_us=(*watchdog_crtl & ((1u<<24)-1));
+    return time_remaning_us;
+}  
+
 
 void SPP_watchdog_reboot (uint32_t pc, uint32_t sp, uint32_t delay_ms){
     watchdog_reboot(pc,sp, delay_ms);
