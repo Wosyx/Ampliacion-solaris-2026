@@ -4,7 +4,7 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+
 
 /**
  * \brief Determines if watchdog caused last reboot.
